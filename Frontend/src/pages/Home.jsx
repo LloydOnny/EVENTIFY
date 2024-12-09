@@ -213,7 +213,7 @@ const Home = () => {
                                 startDate={event.startDateTime}
                                 endDate={event.endDateTime}
                                 title={event.name}
-                                image={event.image}
+                                image={event.imageUrl}
                                 capacity={event.capacity}
                                 type={event.category}
                                 description={event.description}

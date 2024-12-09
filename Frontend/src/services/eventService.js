@@ -18,7 +18,7 @@ export const getEvents = async () => {
     );
     return response?.data?.data?.map((event) => ({
       ...event,
-      image: event.image || getRandomImage(),
+      image: event.imageUrl || getRandomImage(),
     }));
   } catch (error) {
     console.error("Error fetching events:", error);
