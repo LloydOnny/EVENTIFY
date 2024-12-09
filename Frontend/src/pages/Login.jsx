@@ -34,8 +34,26 @@ const Login = () => {
       login(response.data);
     } catch (error) {
       toast.dismiss(loadingToast);
-      toast.error(error);
-      setError({ submit: error });
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred during login";
+
+      toast.error(errorMessage);
+
+      if (error.response?.data?.errors) {
+        Object.keys(error.response.data.errors).forEach((key) => {
+          setError(key, {
+            type: "manual",
+            message: error.response.data.errors[key],
+          });
+        });
+      } else {
+        setError("root", {
+          type: "manual",
+          message: errorMessage,
+        });
+      }
     }
     control._disableForm(false);
   };
