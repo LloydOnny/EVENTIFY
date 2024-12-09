@@ -17,10 +17,9 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [category] = useState("");
+  const [isCreateEventModalOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [isCreateEventModalOpen] = useState(false);
 
   const fetchEvents = async () => {
     try {
@@ -50,113 +49,154 @@ const Home = () => {
     return uniqueCategories.filter(Boolean);
   }, [events]);
 
-  // Filter events based on search and category
+  // Enhanced filtering logic with memoization
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       if (!event) return false;
 
-      const eventTitle = event.title?.toLowerCase() || "";
-      const eventDescription = event.description?.toLowerCase() || "";
-      const searchTerm = searchQuery.toLowerCase();
+      // Search query filter
+      const matchesSearch = searchQuery
+        ? event.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          event.description
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          event.location?.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
 
-      const matchesSearch =
-        searchTerm === "" ||
-        eventTitle.includes(searchTerm) ||
-        eventDescription.includes(searchTerm);
+      // Date filter
+      const matchesDate = selectedDate
+        ? new Date(event.startDateTime).toDateString() ===
+          selectedDate.toDateString()
+        : true;
 
-      const matchesCategory = category === "" || event.category === category;
+      // Category/preferences filter
+      const matchesPreferences = selectedPreferences.length
+        ? selectedPreferences.includes(event.category)
+        : true;
 
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesDate && matchesPreferences;
     });
-  }, [events, searchQuery, category]);
+  }, [events, searchQuery, selectedDate, selectedPreferences]);
 
-  // Enhanced animation variants
-  const pageVariants = {
-    initial: { opacity: 0, backgroundColor: "#111827" }, // Dark background
-    animate: {
-      opacity: 1,
-      transition: {
-        duration: 0.8,
-        ease: "easeOut",
-      },
-    },
-    exit: { opacity: 0 },
+  // Function to handle preference changes from Calendar
+  const handlePreferenceChange = (preferences) => {
+    setSelectedPreferences(preferences);
   };
+
+  // Function to handle date selection from Calendar
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+  };
+
+  // Function to clear all filters
+  const clearFilters = () => {
+    setSelectedDate(null);
+    setSelectedPreferences([]);
+    setSearchQuery("");
+  };
+
+  // Filter status for UI feedback
+  const isFiltering =
+    selectedDate || selectedPreferences.length > 0 || searchQuery;
 
   return (
     <motion.div
-      variants={pageVariants}
       initial='initial'
       animate='animate'
       exit='exit'
       className='min-h-screen bg-gray-900 text-gray-100'
     >
       <Navbar />
-
-      <motion.div
-        className='mx-auto px-4 py-8 container'
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <motion.div className='mx-auto px-4 py-8 container'>
         <div className='flex flex-col lg:flex-row gap-8 h-[calc(100vh-theme(spacing.20))]'>
           {/* Calendar Section */}
-          <motion.div
-            className='lg:w-[350px] h-auto max-h-[50dvh] w-full bg-gray-800 rounded-xl p-4 shadow-lg'
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <motion.div className='lg:w-[350px] w-full'>
             <EventCalendar
               events={events}
-              onDateSelect={setSelectedDate}
-              onPreferencesChange={setSelectedPreferences}
+              onDateSelect={handleDateSelect}
+              onPreferencesChange={handlePreferenceChange}
               preferences={categories}
+              selectedDate={selectedDate}
+              selectedPreferences={selectedPreferences}
             />
           </motion.div>
 
           {/* Events Section */}
-          <motion.div
-            className='flex-1 overflow-hidden'
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
+          <motion.div className='flex-1 lg:overflow-hidden'>
             <div className='flex flex-col h-full'>
-              <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6'>
-                <h2 className='text-2xl font-bold text-gray-100'>
-                  {selectedDate
-                    ? `Events on ${selectedDate.toLocaleDateString()}`
-                    : "All Events"}
-                </h2>
-                <div className='w-full md:w-64'>
-                  <SearchBar
-                    placeholder='Search events...'
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                    className='w-full md:w-64 bg-gray-800 text-gray-100'
-                  />
+              {/* Header with search and filter info */}
+              <div className='flex flex-col space-y-4 mb-6'>
+                <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
+                  <h2 className='text-2xl font-bold text-gray-100'>
+                    {selectedDate
+                      ? `Events on ${selectedDate.toLocaleDateString()}`
+                      : "All Events"}
+                  </h2>
+                  <div className='w-full md:w-64'>
+                    <SearchBar
+                      placeholder='Search events...'
+                      value={searchQuery}
+                      onChange={setSearchQuery}
+                      className='w-full md:w-64 bg-gray-800 text-gray-100'
+                    />
+                  </div>
                 </div>
+
+                {/* Active filters display */}
+                {isFiltering && (
+                  <div className='flex flex-wrap items-center gap-2'>
+                    {selectedDate && (
+                      <span className='px-3 py-1 bg-gray-800 rounded-full text-sm flex items-center gap-2'>
+                        <span>{selectedDate.toLocaleDateString()}</span>
+                        <button
+                          onClick={() => setSelectedDate(null)}
+                          className='hover:text-primary'
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    {selectedPreferences.map((pref) => (
+                      <span
+                        key={pref}
+                        className='px-3 py-1 bg-gray-800 rounded-full text-sm flex items-center gap-2'
+                      >
+                        <span>{pref}</span>
+                        <button
+                          onClick={() =>
+                            setSelectedPreferences(
+                              selectedPreferences.filter((p) => p !== pref)
+                            )
+                          }
+                          className='hover:text-primary'
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    {searchQuery && (
+                      <span className='px-3 py-1 bg-gray-800 rounded-full text-sm flex items-center gap-2'>
+                        <span>"{searchQuery}"</span>
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className='hover:text-primary'
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    <button
+                      onClick={clearFilters}
+                      className='text-sm text-primary hover:text-primary/90'
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Filter clear button */}
-              {(selectedDate ||
-                selectedPreferences.length > 0 ||
-                searchQuery) && (
-                <button
-                  onClick={() => {
-                    setSelectedDate(null);
-                    setSelectedPreferences([]);
-                    setSearchQuery("");
-                  }}
-                  className='text-sm text-primary hover:text-primary/90 mt-2 mb-6'
-                >
-                  Clear filters
-                </button>
-              )}
-
-              {/* Scrollable events grid */}
-              <div className='overflow-y-auto flex-1'>
+              {/* Events grid */}
+              <div className='lg:overflow-y-auto flex-1'>
                 <LayoutGroup>
                   <motion.div
                     layout
@@ -164,7 +204,6 @@ const Home = () => {
                   >
                     <AnimatePresence mode='wait'>
                       {loading ? (
-                        // Skeleton loader grid
                         <>
                           {[1, 2, 3, 4, 5, 6].map((index) => (
                             <motion.div
@@ -194,11 +233,10 @@ const Home = () => {
                           </p>
                         </motion.div>
                       ) : (
-                        // Actual events
                         <>
                           {filteredEvents.map((event, index) => (
                             <motion.div
-                              key={event.id || index}
+                              key={event._id || index}
                               layout
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -224,7 +262,7 @@ const Home = () => {
                                 }
                                 location={event.location}
                                 event={event}
-                                onRSVP={() => handleRSVP()}
+                                onRSVP={handleRSVP}
                               />
                             </motion.div>
                           ))}
@@ -238,7 +276,7 @@ const Home = () => {
                               >
                                 <EventCard
                                   create_Button
-                                  link={"/dashboard/create-event"}
+                                  link='/dashboard/create-event'
                                   onClick={() =>
                                     navigate("/dashboard/create-event")
                                   }

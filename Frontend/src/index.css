@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-color: #111827 !important; /* gray-800 */
+}
+
 .react-calendar {
   background: #1f2937 !important; /* gray-800 */
   border: none !important;

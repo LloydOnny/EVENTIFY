@@ -88,8 +88,8 @@ const MyEvents = () => {
             <div className='grid gap-6'>
               {filteredEvents.map((event) => (
                 <div
-                  id={event._id}
-                  key={event._id}
+                  id={event?._id}
+                  key={event?._id}
                   className='bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden'
                 >
                   <div className='p-6'>
@@ -164,7 +164,7 @@ const MyEvents = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => cancelBooking(event._id)}
+                      onClick={() => cancelBooking(event?._id)}
                       className='px-4 py-2 text-sm text-red-600 border border-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors mt-4'
                     >
                       Cancel Booking
@@ -176,7 +176,7 @@ const MyEvents = () => {
                       Booked on{" "}
                       {new Date(
                         event.attendees.find(
-                          (attendee) => attendee.user._id === user.id
+                          (attendee) => attendee.user?._id === user.id
                         ).registrationDate
                       ).toLocaleDateString("en-US", {
                         year: "numeric",
