@@ -19,6 +19,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import EventBookings from "./pages/EventBookings";
 import CreateEvent from "./pages/dashboard/createEvent";
 import EditEvent from "./pages/dashboard/editEvent";
+import BecomeAdmin from "./pages/becomeAdmin";
 
 const App = () => {
   return (
@@ -52,6 +53,15 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <MyEvents />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/become-admin'
+              element={
+                <ProtectedRoute>
+                  <BecomeAdmin />
                 </ProtectedRoute>
               }
             />

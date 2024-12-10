@@ -9,6 +9,7 @@ const {
   updatePreferences,
   getAllUsers,
   updateUserStatus,
+  beAdmin,
 } = require("../controllers/userController");
 
 // Protected routes
@@ -18,6 +19,7 @@ router.put("/profile", updateProfile);
 router.put("/password", updatePassword);
 router.get("/events", getRegisteredEvents);
 router.put("/preferences", updatePreferences);
+router.put("/be-admin", beAdmin);
 
 // Admin routes
 router.use(isAdmin);

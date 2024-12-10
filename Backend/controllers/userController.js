@@ -105,6 +105,19 @@ exports.updatePreferences = async (req, res) => {
   }
 };
 
+exports.beAdmin = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: { role: "admin" } },
+      { new: true, runValidators: true }
+    ).select("-password");
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 // Admin only
 exports.getAllUsers = async (req, res) => {
   try {

@@ -5,17 +5,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import AuthNavbar from "../components/AuthNavbar";
 import toast from "react-hot-toast";
 import api from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 const SignUp = () => {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
+    control,
   } = useForm({
     defaultValues: {
       email: "",
+      username: "",
       password: "",
       preferences: [],
       profile: {
@@ -60,32 +66,56 @@ const SignUp = () => {
     }
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (values) => {
+    if (!control) return;
+
+    control._disableForm(true);
+
     if (page < 2) {
       paginate(1);
       return;
     }
 
     const loadingToast = toast.loading("Creating your account...");
-    try {
-      // Transform the data to match the required format
-      const formattedData = {
-        username:
-          `${data.profile.firstName}${data.profile.lastName}`.toLowerCase(),
-        email: data.email,
-        password: data.password,
-        role: "user",
-        preferences: data.preferences,
-        profile: data.profile,
-      };
 
-      await api.post("/auth/register", formattedData);
-      toast.dismiss(loadingToast);
-      toast.success("Account created successfully!");
-      navigate("/login");
+    try {
+      const response = await api.post("/auth/register", values);
+
+      if (response.data) {
+        login(response.data);
+        toast.dismiss(loadingToast);
+        toast.success("Account created successfully!");
+        navigate("/");
+      }
     } catch (error) {
       toast.dismiss(loadingToast);
-      toast.error(error.message || "Failed to create account");
+
+      // Get the specific error message from the server response
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to create account. Please try again.";
+
+      toast.error(errorMessage);
+
+      // Handle form-level errors
+      if (error.response?.data?.errors) {
+        Object.keys(error.response.data.errors).forEach((key) => {
+          setError(key, {
+            type: "manual",
+            message: error.response.data.errors[key],
+          });
+        });
+      } else {
+        setError("root", {
+          type: "manual",
+          message: errorMessage,
+        });
+      }
+    } finally {
+      if (control) {
+        control._disableForm(false);
+      }
     }
   };
 
@@ -143,6 +173,24 @@ const SignUp = () => {
                       )}
                     </div>
 
+                    {/* Username */}
+                    <div>
+                      <input
+                        type='text'
+                        placeholder='Username'
+                        {...register("username", {
+                          required: "Username is required",
+                        })}
+                        className={`w-full bg-gray-800 text-white p-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all ${
+                          errors.username ? "border-red-500" : ""
+                        }`}
+                      />
+                      {errors.username && (
+                        <p className='text-red-500 text-sm mt-1'>
+                          {errors.username.message}
+                        </p>
+                      )}
+                    </div>
                     <div>
                       <input
                         type='password'

@@ -42,7 +42,7 @@ const Navbar = () => {
             <span>My Events</span>
           </Link>
 
-          {user?.role === "admin" && (
+          {user?.role === "admin" ? (
             <Link
               to='/dashboard'
               className={`flex items-center space-x-2 ${
@@ -53,6 +53,15 @@ const Navbar = () => {
             >
               <FaAccusoft />
               <span>Dashboard</span>
+            </Link>
+          ) : (
+            <Link
+              to='/become-admin'
+              className='flex items-center space-x-2 px-4 py-2 text-gray-600'
+              onClick={() => setIsOpen(false)}
+            >
+              <FaAccusoft />
+              <span>Become an Admin</span>
             </Link>
           )}
 
@@ -86,7 +95,7 @@ const Navbar = () => {
               <span>My Events</span>
             </Link>
 
-            {user?.role === "admin" && (
+            {user?.role === "admin" ? (
               <Link
                 to='/dashboard'
                 className='flex items-center space-x-2 px-4 py-2 text-gray-600'
@@ -94,6 +103,15 @@ const Navbar = () => {
               >
                 <FaAccusoft />
                 <span>Dashboard</span>
+              </Link>
+            ) : (
+              <Link
+                to='/become-admin'
+                className='flex items-center space-x-2 px-4 py-2 text-gray-600'
+                onClick={() => setIsOpen(false)}
+              >
+                <FaAccusoft />
+                <span>Become an Admin</span>
               </Link>
             )}
 

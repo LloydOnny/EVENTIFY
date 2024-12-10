@@ -6,7 +6,7 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
-  FiUpload,
+  FiHome,
 } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import SearchBar from "../../components/SearchBar";
@@ -63,6 +63,12 @@ const Dashboard = () => {
   });
 
   const menuItems = [
+    {
+      id: "home",
+      label: "Home",
+      icon: <FiHome />,
+      path: "/",
+    },
     {
       id: "allEvents",
       label: "All Events",

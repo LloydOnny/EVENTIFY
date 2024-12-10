@@ -1,10 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import api from "../services/api";
 
 const AuthContext = createContext({
   user: null,
   loading: true,
   login: () => {},
   logout: () => {},
+  refreshUser: () => {},
 });
 
 export const AuthProvider = ({ children }) => {
@@ -34,6 +36,24 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
+  const refreshUser = async () => {
+    try {
+      const response = await api.get("/users/me");
+      if (response.data) {
+        const updatedUser = {
+          ...user,
+          ...response.data,
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(response.data));
+        return updatedUser;
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      throw error;
+    }
+  };
+
   const login = (authData) => {
     const userData = {
       token: authData.data.accessToken,
@@ -53,17 +73,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
   };
 
-  const updateUser = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
   const value = {
     user,
     loading,
     login,
     logout,
-    updateUser,
+    refreshUser,
   };
 
   if (loading) {

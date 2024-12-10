@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
-
+const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 // Middleware
@@ -19,6 +19,7 @@ app.use(
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/users", userRoutes);
 
 // Connect to MongoDB
 mongoose

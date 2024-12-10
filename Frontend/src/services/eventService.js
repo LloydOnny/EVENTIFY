@@ -28,6 +28,7 @@ export const getEvents = async () => {
 
 export const getMyEvents = async (userId) => {
   const events = await getEvents();
+  console.log(events);
   return events.filter((event) =>
     event.attendees.some((attendee) => attendee.user._id === String(userId))
   );
